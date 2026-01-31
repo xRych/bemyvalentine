@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>¿Quieres ser mi San Valentín? 💘</title>
+
+  <style>
+    :root{
+      --bg1:#ffdde1;
+      --bg2:#ee9ca7;
+      --card:#ffffffcc;
+      --text:#1f1f1f;
+      --yes:#ff4d6d;
+      --no:#444;
+
+      /* Fit scale (JS lo ajusta para que NO haya scroll) */
+      --fit: 1;
+    }
+
+    *{box-sizing:border-box}
+
+    html, body{
+      width:100%;
+      height:100%;
+      overflow:hidden; /* ✅ sin scroll */
+    }
+
+    body{
+      margin:0;
+      min-height:100svh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(circle at top, var(--bg1), var(--bg2));
+      color:var(--text);
+      padding:
+        calc(14px + env(safe-area-inset-top))
+        14px
+        calc(14px + env(safe-area-inset-bottom))
+        14px;
+    }
+
+    /* Wrapper que se escala para que TODO entre en pantalla */
+    .wrap{
+      width:100%;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      transform: scale(var(--fit));
+      transform-origin: center;
+      will-change: transform;
+      transition: transform .25s ease;
+    }
+
+    /* ================= HEART INTRO ================= */
+    .intro{
+      position:absolute;
+      inset:0;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      z-index:10;
+      background: radial-gradient(circle at top, var(--bg1), var(--bg2));
+      transition: opacity .6s ease, transform .6s ease;
+    }
+
+    .intro.hide{
+      opacity:0;
+      pointer-events:none;
+      transform: scale(1.1);
+    }
+
+    .big-heart{
+      font-size:120px;
+      cursor:pointer;
+      animation: beat 1.2s infinite;
+      user-select:none;
+      filter: drop-shadow(0 10px 22px rgba(0,0,0,.18));
+    }
+
+    @keyframes beat{
+      0%,100%{transform:scale(1)}
+      50%{transform:scale(1.15)}
+    }
+
+    /* ================= CARD ================= */
+    .card{
+      width:100%;
+      max-width:680px;
+      background: var(--card);
+      backdrop-filter: blur(10px);
+      border:1px solid #ffffff70;
+      border-radius:24px;
+      padding:22px 18px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.15);
+      text-align:center;
+      position:relative;
+
+      opacity:0;
+      transform: scale(.96);
+      transition: opacity .6s ease, transform .6s ease, box-shadow .6s ease;
+    }
+
+    .card.show{
+      opacity:1;
+      transform: scale(1);
+    }
+
+    .card.yes-mode{
+      transform: translateY(-6px) scale(1);
+      box-shadow: 0 30px 90px rgba(0,0,0,.22);
+    }
+
+    h1{
+      margin:0 0 8px;
+      font-size: clamp(20px, 5vw, 32px);
+    }
+
+    p{
+      margin:0 0 10px;
+      font-size: clamp(13.5px, 3.6vw, 15.5px);
+      line-height:1.45;
+    }
+
+    .stage{
+      position:relative;
+      height:190px;
+      margin-top:10px;
+    }
+
+    .btn{
+      border:0;
+      padding:14px 18px;
+      border-radius:999px;
+      font-weight:800;
+      cursor:pointer;
+      font-size:16px;
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform .12s ease, filter .2s ease;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.12));
+    }
+
+    .btn:active{transform:scale(.97)}
+
+    .btn-yes{
+      background:var(--yes);
+      color:#fff;
+    }
+
+    .btn-no{
+      background:var(--no);
+      color:#fff;
+    }
+
+    #yesBtn{
+      position:absolute;
+      left:50%;
+      top:26px;
+      transform:translateX(-50%);
+    }
+
+    #noBtn{
+      position:absolute;
+      left:50%;
+      top:108px;
+      transform:translateX(-50%);
+    }
+
+    .hint{
+      font-size:13px;
+      opacity:.75;
+      margin-top:4px;
+      transition: opacity .3s ease;
+    }
+
+    /* ================= RESULT ================= */
+    .result{
+      display:none;
+      margin-top:10px;
+    }
+
+    .result h2{
+      margin:10px 0 8px;
+      font-size: clamp(18px, 5vw, 26px);
+    }
+
+    .line{
+      opacity:0;
+      animation: lineIn .5s ease forwards;
+    }
+
+    @keyframes lineIn{
+      from{opacity:0; transform:translateY(6px)}
+      to{opacity:1; transform:translateY(0)}
+    }
+
+    .img-wrap{
+      width:min(340px, 88vw);
+      margin:10px auto 0;
+      border-radius:20px;
+      overflow:hidden;
+      max-height:24svh;
+    }
+
+    .img-wrap img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .footer{
+      margin-top:8px;
+      font-size:12px;
+      opacity:.6;
+    }
+
+    /* ✅ Compactación extra cuando el alto es pequeño (iPhone 13 / similares) */
+    @media (max-height: 740px){
+      .card{
+        padding:18px 14px;
+        border-radius:20px;
+      }
+      .stage{ height:170px; }
+      .img-wrap{ max-height:16svh; }
+      .hint{ font-size:12px; }
+    }
+
+    /* ================= EMOJI FX LAYER ================= */
+    .fx-layer{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:999;
+      overflow:hidden;
+    }
+
+    .fx{
+      position:fixed;
+      left:0; top:0;
+      font-size:22px;
+      will-change: transform, opacity;
+      filter: drop-shadow(0 10px 16px rgba(0,0,0,.18));
+      animation: fxFloat var(--dur, 900ms) ease-out forwards;
+    }
+
+    @keyframes fxFloat{
+      0%{
+        transform: translate(var(--x,0), var(--y,0)) scale(.9);
+        opacity: 0;
+      }
+      10%{ opacity: 1; }
+      100%{
+        transform: translate(calc(var(--x,0) + var(--dx,0px)),
+                             calc(var(--y,0) + var(--dy,-120px)))
+                   rotate(var(--rot, 12deg))
+                   scale(var(--s, 1.25));
+        opacity: 0;
+      }
+    }
+
+    /* Reduce motion */
+    @media (prefers-reduced-motion: reduce){
+      *{animation:none!important; transition:none!important;}
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- FX layer -->
+  <div class="fx-layer" id="fxLayer"></div>
+
+  <!-- ❤️ INTRO HEART -->
+  <div class="intro" id="intro">
+    <div class="big-heart" id="bigHeart">❤️</div>
+  </div>
+
+  <!-- wrapper para auto-fit -->
+  <div class="wrap" id="wrap">
+    <!-- 💌 MAIN CARD -->
+    <main class="card" id="card">
+      <h1>¿Quieres ser mi San Valentín? 💘</h1>
+      <p>Prometo que habrá risas, detalles y mucho cariño 🥰</p>
+
+      <div class="stage" id="stage">
+        <button class="btn btn-yes" id="yesBtn">Sí 💖</button>
+        <button class="btn btn-no" id="noBtn">No 🙈</button>
+      </div>
+
+      <div class="hint" id="hint">Tip: intenta presionar “No” 😅</div>
+
+      <section class="result" id="result">
+        <h2 class="line" style="animation-delay:.1s">¡SÍIIII! 😍💞</h2>
+
+        <p class="line" style="animation-delay:.3s">
+          Sabía que no te ibas a resistir… mi corazón ya lo sabía antes que yo 😌💘
+        </p>
+
+        <p class="line" style="animation-delay:.5s">
+          Gracias por elegirnos, por decir que sí a compartir momentos, risas,
+          abrazos infinitos y recuerdos que solo tú y yo vamos a entender 💕
+        </p>
+
+        <p class="line" style="animation-delay:.7s">
+          Prometo cuidarte, apoyarte y hacerte sonreír incluso en los días grises,
+          porque contigo todo tiene más sentido ✨
+        </p>
+
+        <p class="line" style="animation-delay:.9s">
+          Este San Valentín es solo una excusa… yo te elegiría hoy, mañana
+          y todas las veces que haga falta ❤️
+        </p>
+
+        <div class="img-wrap line" style="animation-delay:1.1s">
+          <img
+            src="https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=900&q=80"
+            alt="Imagen romántica"
+          />
+        </div>
+
+        <div class="footer line" style="animation-delay:1.3s">
+          Hecho con todo mi cariño, solo para ti 💗
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const intro = document.getElementById("intro");
+    const bigHeart = document.getElementById("bigHeart");
+    const card = document.getElementById("card");
+    const wrap = document.getElementById("wrap");
+
+    const stage = document.getElementById("stage");
+    const noBtn = document.getElementById("noBtn");
+    const yesBtn = document.getElementById("yesBtn");
+    const hint = document.getElementById("hint");
+    const result = document.getElementById("result");
+
+    const fxLayer = document.getElementById("fxLayer");
+
+    /* ================= AUTO FIT (NO SCROLL) ================= */
+    function fitToViewport(){
+      // resetea escala para medir correctamente
+      document.documentElement.style.setProperty('--fit', 1);
+
+      // espera un frame para que el layout se actualice
+      requestAnimationFrame(() => {
+        const pad = 18; // margen de seguridad visual
+        const rect = wrap.getBoundingClientRect();
+        const availH = window.innerHeight - pad*2;
+        const availW = window.innerWidth - pad*2;
+
+        let scale = 1;
+        if(rect.height > availH) scale = Math.min(scale, availH / rect.height);
+        if(rect.width  > availW) scale = Math.min(scale, availW / rect.width);
+
+        // limita para que no se vea microscópico
+        scale = Math.max(scale, 0.78);
+
+        document.documentElement.style.setProperty('--fit', scale.toFixed(3));
+      });
+    }
+
+    window.addEventListener("resize", fitToViewport);
+    window.addEventListener("orientationchange", fitToViewport);
+
+    /* ================= EMOJI BURST ================= */
+    function burstEmoji({emoji, x, y, count=12}){
+      for(let i=0;i<count;i++){
+        const s = document.createElement("span");
+        s.className = "fx";
+        s.textContent = emoji;
+
+        const dx = (Math.random()*2 - 1) * 140;     // horizontal spread
+        const dy = - (70 + Math.random()*160);      // float up
+        const rot = (Math.random()*2 - 1) * 45;     // rotate
+        const sc  = 1 + Math.random()*0.6;
+        const dur = 700 + Math.random()*650;
+
+        s.style.setProperty("--x", x + "px");
+        s.style.setProperty("--y", y + "px");
+        s.style.setProperty("--dx", dx + "px");
+        s.style.setProperty("--dy", dy + "px");
+        s.style.setProperty("--rot", rot + "deg");
+        s.style.setProperty("--s", sc.toFixed(2));
+        s.style.setProperty("--dur", dur.toFixed(0) + "ms");
+
+        fxLayer.appendChild(s);
+        setTimeout(() => s.remove(), dur + 50);
+      }
+    }
+
+    function rectCenter(el){
+      const r = el.getBoundingClientRect();
+      return { x: r.left + r.width/2, y: r.top + r.height/2 };
+    }
+
+    /* ================= HEART INTRO ================= */
+    bigHeart.addEventListener("click", () => {
+      // 💘 burst de corazones al click
+      const c = rectCenter(bigHeart);
+      const hearts = ["❤️","💖","💘","💕"];
+      for(let i=0;i<2;i++){
+        burstEmoji({
+          emoji: hearts[Math.floor(Math.random()*hearts.length)],
+          x: c.x,
+          y: c.y,
+          count: 10
+        });
+      }
+
+      intro.classList.add("hide");
+      setTimeout(() => {
+        card.classList.add("show");
+        fitToViewport();
+      }, 300);
+    });
+
+    /* ================= NO BUTTON ================= */
+    const noMessages = [
+      "Como que no????? 😡",
+      "Piénsalo bien… 👀",
+      "Eso no era una opción 😤",
+      "Ya sabemos que quieres decir que sí 😏",
+      "Última oportunidad… 💘"
+    ];
+
+    let noIndex = 0;
+    let noIsActive = false;
+
+    function moveNoButton(){
+      const s = stage.getBoundingClientRect();
+      const b = noBtn.getBoundingClientRect();
+      const pad = 10;
+      noBtn.style.left = pad + Math.random()*(s.width-b.width-pad) + "px";
+      noBtn.style.top  = pad + Math.random()*(s.height-b.height-pad) + "px";
+      noBtn.style.transform = "translateX(0)";
+    }
+
+    noBtn.addEventListener("click", e => {
+      e.preventDefault();
+      if(!noIsActive) noIsActive = true;
+
+      // 😡 burst cada vez que presiona NO
+      burstEmoji({ emoji:"😡", x:e.clientX, y:e.clientY, count:12 });
+
+      hint.textContent = noMessages[noIndex];
+      noIndex = (noIndex + 1) % noMessages.length;
+
+      moveNoButton();
+      fitToViewport();
+    });
+
+    /* ================= YES BUTTON ================= */
+    yesBtn.addEventListener("click", (e) => {
+      // ✨ burst de estrellas al decir SÍ
+      const c = rectCenter(yesBtn);
+      const stars = ["✨","🌟","💫"];
+      burstEmoji({ emoji: stars[Math.floor(Math.random()*stars.length)], x:c.x, y:c.y, count:18 });
+
+      stage.style.display = "none";
+      hint.style.display = "none";
+      card.classList.add("yes-mode");
+      result.style.display = "block";
+
+      // recalcular fit porque crece el contenido
+      fitToViewport();
+    });
+
+    // Primer fit por si abre ya en móvil
+    fitToViewport();
+  </script>
+
+</body>
+</html>
